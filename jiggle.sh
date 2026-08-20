@@ -29,7 +29,7 @@ EASE=${JIGGLE_EASE:-300}
 SMART=${JIGGLE_SMART:-1}
 
 command -v cliclick >/dev/null 2>&1 || {
-    echo "Не найден cliclick. Поставь: brew install cliclick" >&2
+    echo "cliclick not found. Install it: brew install cliclick" >&2
     exit 1
 }
 
@@ -72,11 +72,11 @@ nudge -3 -3
 
 if [ "$probe_before" = "$probe_after" ]; then
     cat >&2 <<'EOF'
-ОШИБКА: курсор не сдвинулся — скорее всего нет прав Accessibility.
+ERROR: cursor did not move, most likely no Accessibility permission.
 
-  System Settings → Privacy & Security → Accessibility
-  и включить галочку для терминала, из которого запускаешь (Terminal / iTerm).
-  После выдачи прав терминал надо перезапустить.
+  Go to System Settings -> Privacy & Security -> Accessibility
+  and enable the terminal you are running this from (Terminal / iTerm).
+  Restart the terminal after granting the permission.
 EOF
     exit 1
 fi
@@ -85,9 +85,9 @@ fi
 count=0
 last=$(pos)
 
-trap 'printf "\nОстановлено. Шевелений за сессию: %d\n" "$count"; exit 0' INT TERM
+trap 'printf "\nStopped. Moves this session: %d\n" "$count"; exit 0' INT TERM
 
-echo "jiggle: пауза ${MIN}-${MAX}с, сдвиг ±${DELTA}px, плавность ${EASE}, smart=${SMART}. Ctrl-C — выход."
+echo "jiggle: pause ${MIN}-${MAX}s, move ${DELTA}px, ease ${EASE}, smart=${SMART}. Ctrl-C to quit."
 
 while :; do
     rnd "$MIN" "$MAX"
@@ -97,7 +97,7 @@ while :; do
 
     # Курсор не там, где мы его оставили, — значит за ноутом кто-то есть.
     if [ "$SMART" = "1" ] && [ "$now" != "$last" ]; then
-        printf '[%s] пропуск — мышь двигали руками\n' "$(date +%H:%M:%S)"
+        printf '[%s] skipped: mouse moved by the user\n' "$(date +%H:%M:%S)"
         last=$now
         continue
     fi
@@ -110,5 +110,5 @@ while :; do
 
     last=$(pos)
     count=$((count + 1))
-    printf '[%s] jiggle %+d,%+d (всего: %d)\n' "$(date +%H:%M:%S)" "$dx" "$dy" "$count"
+    printf '[%s] jiggle %+d,%+d (total: %d)\n' "$(date +%H:%M:%S)" "$dx" "$dy" "$count"
 done
